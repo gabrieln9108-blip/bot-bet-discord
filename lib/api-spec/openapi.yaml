@@ -1,0 +1,690 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: dashboard
+    description: Overview for the job search journey
+  - name: curriculums
+    description: Resume management
+  - name: interviews
+    description: Guided interview simulations
+  - name: job-analyses
+    description: Job description analysis
+  - name: applications
+    description: Application tracking
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get the user's progress overview
+      responses:
+        "200":
+          description: Dashboard overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /curriculums:
+    get:
+      operationId: listCurriculums
+      tags: [curriculums]
+      summary: List saved curriculums
+      responses:
+        "200":
+          description: Saved curriculums
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Curriculum"
+    post:
+      operationId: createCurriculum
+      tags: [curriculums]
+      summary: Create a curriculum
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CurriculumInput"
+      responses:
+        "201":
+          description: Curriculum created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Curriculum"
+  /curriculums/{id}:
+    get:
+      operationId: getCurriculum
+      tags: [curriculums]
+      summary: Get one curriculum
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Curriculum
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Curriculum"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateCurriculum
+      tags: [curriculums]
+      summary: Update a curriculum
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CurriculumUpdate"
+      responses:
+        "200":
+          description: Curriculum updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Curriculum"
+    delete:
+      operationId: deleteCurriculum
+      tags: [curriculums]
+      summary: Delete a curriculum
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Curriculum deleted
+  /curriculums/{id}/duplicate:
+    post:
+      operationId: duplicateCurriculum
+      tags: [curriculums]
+      summary: Duplicate a curriculum
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "201":
+          description: Curriculum duplicated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Curriculum"
+  /interviews:
+    post:
+      operationId: createInterview
+      tags: [interviews]
+      summary: Start an interview simulation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterviewInput"
+      responses:
+        "201":
+          description: Interview started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Interview"
+    get:
+      operationId: listInterviews
+      tags: [interviews]
+      summary: List interview simulations
+      responses:
+        "200":
+          description: Interview simulations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Interview"
+  /interviews/{id}/messages:
+    post:
+      operationId: sendInterviewMessage
+      tags: [interviews]
+      summary: Send an answer in an interview
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterviewMessageInput"
+      responses:
+        "200":
+          description: Interview response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewMessage"
+  /interviews/{id}/finish:
+    post:
+      operationId: finishInterview
+      tags: [interviews]
+      summary: Finish an interview and generate feedback
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Interview evaluation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewResult"
+  /job-analyses:
+    post:
+      operationId: createJobAnalysis
+      tags: [job-analyses]
+      summary: Analyze a job description
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobAnalysisInput"
+      responses:
+        "201":
+          description: Job analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobAnalysis"
+    get:
+      operationId: listJobAnalyses
+      tags: [job-analyses]
+      summary: List analyzed jobs
+      responses:
+        "200":
+          description: Job analyses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobAnalysis"
+  /job-analyses/{id}:
+    delete:
+      operationId: deleteJobAnalysis
+      tags: [job-analyses]
+      summary: Delete a saved job analysis
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Job analysis deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /applications:
+    get:
+      operationId: listApplications
+      tags: [applications]
+      summary: List job applications
+      responses:
+        "200":
+          description: Applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+    post:
+      operationId: createApplication
+      tags: [applications]
+      summary: Register an application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationInput"
+      responses:
+        "201":
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+  /applications/{id}:
+    patch:
+      operationId: updateApplication
+      tags: [applications]
+      summary: Update an application
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationUpdate"
+      responses:
+        "200":
+          description: Application updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+    delete:
+      operationId: deleteApplication
+      tags: [applications]
+      summary: Delete an application
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Application deleted
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    Dashboard:
+      type: object
+      required: [userName, progress, checklist, applicationSummary, recentActivity, achievements, nextStep]
+      properties:
+        userName: { type: string }
+        progress: { type: integer, minimum: 0, maximum: 100 }
+        checklist:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChecklistItem"
+        applicationSummary:
+          type: object
+          additionalProperties: { type: integer }
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/Activity"
+        achievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Achievement"
+        nextStep:
+          $ref: "#/components/schemas/NextStep"
+    ChecklistItem:
+      type: object
+      required: [label, completed]
+      properties:
+        label: { type: string }
+        completed: { type: boolean }
+    Activity:
+      type: object
+      required: [label, time]
+      properties:
+        label: { type: string }
+        time: { type: string }
+    Achievement:
+      type: object
+      required: [label, unlocked]
+      properties:
+        label: { type: string }
+        unlocked: { type: boolean }
+    NextStep:
+      type: object
+      required: [title, description, href]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        href: { type: string }
+    Curriculum:
+      type: object
+      required: [id, name, objective, template, updatedAt, status, data]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        objective: { type: string }
+        template: { type: string, enum: [minimalista, classico, moderno, profissional, executivo, elegante, compacto, clean, contemporaneo, formal] }
+        updatedAt: { type: string }
+        status: { type: string, enum: [rascunho, pronto] }
+        data:
+          $ref: "#/components/schemas/CurriculumData"
+    CurriculumData:
+      type: object
+      required: [personal, education, courses, skills, experiences, profile]
+      properties:
+        personal:
+          $ref: "#/components/schemas/PersonalData"
+        education:
+          type: array
+          items:
+            $ref: "#/components/schemas/Education"
+        courses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Course"
+        skills:
+          type: array
+          items: { type: string }
+        experiences:
+          type: array
+          items:
+            $ref: "#/components/schemas/Experience"
+        profile: { type: string }
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Project"
+        languages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Language"
+        digitalSkills:
+          type: array
+          items: { type: string }
+        volunteering:
+          type: array
+          items:
+            $ref: "#/components/schemas/Volunteering"
+        activities:
+          type: array
+          items: { type: string }
+        awards:
+          type: array
+          items:
+            $ref: "#/components/schemas/Award"
+        links:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProfessionalLink"
+        additionalInfo: { type: string }
+    PersonalData:
+      type: object
+      required: [name, city, phone, email]
+      properties:
+        name: { type: string }
+        city: { type: string }
+        phone: { type: string }
+        email: { type: string }
+    Education:
+      type: object
+      required: [level, status]
+      properties:
+        level: { type: string }
+        status: { type: string }
+        institution: { type: string }
+        course: { type: string }
+        completionYear: { type: string }
+    Course:
+      type: object
+      required: [name, institution, year]
+      properties:
+        name: { type: string }
+        institution: { type: string }
+        year: { type: string }
+        hours: { type: string }
+        certificate: { type: boolean }
+    Experience:
+      type: object
+      required: [type, description]
+      properties:
+        type: { type: string }
+        description: { type: string }
+        organization: { type: string }
+        role: { type: string }
+        period: { type: string }
+        responsibilities: { type: string }
+    Project:
+      type: object
+      required: [name, description, contribution, result]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        contribution: { type: string }
+        result: { type: string }
+    Language:
+      type: object
+      required: [language, level]
+      properties:
+        language: { type: string }
+        level: { type: string }
+    Volunteering:
+      type: object
+      required: [organization, role, period, description]
+      properties:
+        organization: { type: string }
+        role: { type: string }
+        period: { type: string }
+        description: { type: string }
+    Award:
+      type: object
+      required: [name, institution, year, description]
+      properties:
+        name: { type: string }
+        institution: { type: string }
+        year: { type: string }
+        description: { type: string }
+    ProfessionalLink:
+      type: object
+      required: [label, url]
+      properties:
+        label: { type: string }
+        url: { type: string }
+    CurriculumInput:
+      type: object
+      required: [name, objective, template, data]
+      properties:
+        name: { type: string, minLength: 1 }
+        objective: { type: string }
+        template: { type: string, enum: [minimalista, classico, moderno, profissional, executivo, elegante, compacto, clean, contemporaneo, formal] }
+        data:
+          $ref: "#/components/schemas/CurriculumData"
+    CurriculumUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        objective: { type: string }
+        template: { type: string, enum: [minimalista, classico, moderno, profissional, executivo, elegante, compacto, clean, contemporaneo, formal] }
+        data:
+          $ref: "#/components/schemas/CurriculumData"
+        status: { type: string, enum: [rascunho, pronto] }
+    Interview:
+      type: object
+      required: [id, role, type, status, question, questionNumber, totalQuestions, startedAt]
+      properties:
+        id: { type: string }
+        role: { type: string }
+        type: { type: string }
+        status: { type: string, enum: [active, completed] }
+        question: { type: string }
+        questionNumber: { type: integer }
+        totalQuestions: { type: integer }
+        startedAt: { type: string }
+        responseMode: { type: string, enum: [text, voice] }
+    InterviewInput:
+      type: object
+      required: [role, type]
+      properties:
+        role: { type: string, minLength: 1 }
+        type: { type: string }
+        responseMode: { type: string, enum: [text, voice], default: text }
+    InterviewMessageInput:
+      type: object
+      required: [answer]
+      properties:
+        answer: { type: string, minLength: 1, maxLength: 2000 }
+    InterviewMessage:
+      type: object
+      required: [question, questionNumber, completed]
+      properties:
+        question: { type: ["string", "null"] }
+        questionNumber: { type: integer }
+        completed: { type: boolean }
+    InterviewResult:
+      type: object
+      required: [id, classification, scores, didWell, improve, practice]
+      properties:
+        id: { type: string }
+        classification: { type: string, enum: [precisa-melhorar, bom, muito-bom] }
+        scores:
+          type: object
+          additionalProperties: { type: integer, minimum: 0, maximum: 10 }
+        didWell:
+          type: array
+          items: { type: string }
+        improve:
+          type: array
+          items: { type: string }
+        practice:
+          type: array
+          items: { type: string }
+    JobAnalysis:
+      type: object
+      required: [id, role, company, location, salary, education, experience, requirements, responsibilities, skills, benefits, fit, compatibilityLabel, scoreBreakdown, strengths, partial, notFound, recommendations, attentionSignals, summary, limitations, profileSources, createdAt]
+      properties:
+        id: { type: string }
+        role: { type: string }
+        company: { type: string }
+        location: { type: string }
+        salary: { type: string }
+        education: { type: string }
+        experience: { type: string }
+        requirements:
+          type: array
+          items: { type: string }
+        responsibilities:
+          type: array
+          items: { type: string }
+        skills:
+          type: array
+          items: { type: string }
+        benefits:
+          type: array
+          items: { type: string }
+        fit: { type: integer, minimum: 0, maximum: 100 }
+        compatibilityLabel: { type: string }
+        scoreBreakdown:
+          type: object
+          required: [education, experience, skills, knowledge, mandatory]
+          properties:
+            education: { type: integer, minimum: 0, maximum: 100 }
+            experience: { type: integer, minimum: 0, maximum: 100 }
+            skills: { type: integer, minimum: 0, maximum: 100 }
+            knowledge: { type: integer, minimum: 0, maximum: 100 }
+            mandatory: { type: integer, minimum: 0, maximum: 100 }
+        strengths:
+          type: array
+          items: { type: string }
+        partial:
+          type: array
+          items: { type: string }
+        notFound:
+          type: array
+          items: { type: string }
+        recommendations:
+          type: array
+          items: { type: string }
+        attentionSignals:
+          type: array
+          items: { type: string }
+        limitations:
+          type: array
+          items: { type: string }
+        profileSources:
+          type: array
+          items: { type: string }
+        gaps:
+          type: array
+          items: { type: string }
+        summary: { type: string }
+        createdAt: { type: string }
+    JobAnalysisInput:
+      type: object
+      required: []
+      properties:
+        company: { type: string, maxLength: 200 }
+        role: { type: string, maxLength: 200 }
+        description: { type: string, maxLength: 10000 }
+    Application:
+      type: object
+      required: [id, company, role, location, status, appliedAt, jobUrl, salary, notes, followUpDate]
+      properties:
+        id: { type: string }
+        company: { type: string }
+        role: { type: string }
+        location: { type: string }
+        status: { type: string, enum: [quero_me_candidatar, enviada, aguardando, entrevista, segunda_etapa, aprovado, rejeitado, encerrada] }
+        appliedAt: { type: string }
+        jobUrl: { type: string }
+        salary: { type: string }
+        notes: { type: string }
+        followUpDate: { type: string }
+    ApplicationInput:
+      type: object
+      required: [company, role, location, status, appliedAt, jobUrl, salary, notes, followUpDate]
+      properties:
+        company: { type: string, minLength: 1 }
+        role: { type: string, minLength: 1 }
+        location: { type: string }
+        status: { type: string, enum: [quero_me_candidatar, enviada, aguardando, entrevista, segunda_etapa, aprovado, rejeitado, encerrada] }
+        appliedAt: { type: string }
+        jobUrl: { type: string }
+        salary: { type: string }
+        notes: { type: string }
+        followUpDate: { type: string }
+    ApplicationUpdate:
+      type: object
+      properties:
+        company: { type: string, minLength: 1 }
+        role: { type: string, minLength: 1 }
+        location: { type: string }
+        status: { type: string, enum: [quero_me_candidatar, enviada, aguardando, entrevista, segunda_etapa, aprovado, rejeitado, encerrada] }
+        appliedAt: { type: string }
+        jobUrl: { type: string }
+        salary: { type: string }
+        notes: { type: string }
+        followUpDate: { type: string }
+
